@@ -30,6 +30,31 @@ monitor.mjs ── JSONL stdin/stdout ── Pi --mode rpc
 - 一个飞书企业自建应用及其机器人能力
 - 建议让 Pi 使用专用的非管理员系统账号或容器
 
+## 安装
+
+两种方式二选一。
+
+### 方式 A：npm 全局安装（推荐）
+
+```bash
+npm install -g pi-feishu-monitor
+pi-feishu-monitor
+```
+
+首次运行没有配置时，会进入交互式配置向导，依次询问飞书 App ID、App Secret、Pi 工作目录，并默认启用发现模式抓取你的 `open_id`。配置写入 `~/.pi-feishu-monitor/.env`（权限 0600），之后可直接启动。
+
+### 方式 B：git clone
+
+```bash
+git clone https://github.com/goehou/pi-feishu-monitor
+cd pi-feishu-monitor
+npm install
+cp .env.example .env   # 手动编辑填入飞书凭证
+npm start
+```
+
+两种方式的配置项完全一致；方式 A 的配置在 `~/.pi-feishu-monitor/.env`，方式 B 在项目根目录 `.env`。
+
 ## 1. 配置飞书应用
 
 1. 打开[飞书开放平台](https://open.feishu.cn/)，创建**企业自建应用**。

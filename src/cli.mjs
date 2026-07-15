@@ -1,0 +1,66 @@
+#!/usr/bin/env node
+// CLI entry: global install boots into first-run setup if no config exists.
+import { existsSync, mkdirSync, readFileSync } from "node:fs";
+import { createInterface } from "node:readline/promises";
+import { homedir } from "node:os";
+import { resolve, dirname } from "node:path";
+
+const CONFIG_DIR = resolve(homedir(), ".pi-feishu-monitor");
+const ENV_FILE = resolve(CONFIG_DIR, ".env");
+const STATE_FILE = resolve(CONFIG_DIR, "state.json");
+
+async function main() {
+  ensureConfigDir();
+  if (!existsSync(ENV_FILE)) {
+    console.log("未找到配置，进入首次配置向导。\n");
+    await firstRunSetup();
+    console.log(`\n配置已写入 ${ENV_FILE}\n可手动编辑后重新运行，或直接启动。\n`);
+  }
+  loadEnvIntoProcess();
+  process.env.PI_STATE_FILE = process.env.PI_STATE_FILE || STATE_FILE;
+  await import("./monitor.mjs");
+}
+
+function ensureConfigDir() {
+  if (!existsSync(CONFIG_DIR)) mkdirSync(CONFIG_DIR, { recursive: true });
+}
+
+async function firstRunSetup() {
+  const rl = createInterface({ input: process.stdin, output: process.stdout });
+  const ask = (q) => rl.question(q);
+  const appId = (await ask("飞书 App ID (cli_xxx): ")).trim();
+  const appSecret = (await ask("飞书 App Secret: ")).trim();
+  const piCwd = (await ask("Pi 工作目录 (绝对路径): ")).trim();
+  console.log("\n首次接入建议先用发现模式抓取 open_id。");
+  const discovery = (await ask("启用发现模式? (Y/n): ")).trim().toLowerCase() !== "n" ? "1" : "0";
+  const openIds = discovery === "0" ? (await ask("授权 open_id (逗号分隔): ")).trim() : "";
+  rl.close();
+
+  const lines = [
+    `FEISHU_APP_ID=${appId}`,
+    `FEISHU_APP_SECRET=${appSecret}`,
+    `FEISHU_DISCOVERY=${discovery}`,
+    `FEISHU_ALLOWED_OPEN_IDS=${openIds}`,
+    `PI_CWD=${piCwd}`,
+  ];
+  const { writeFileSync } = await import("node:fs");
+  writeFileSync(ENV_FILE, lines.join("\n") + "\n", { mode: 0o600 });
+}
+
+function loadEnvIntoProcess() {
+  const content = readFileSync(ENV_FILE, "utf8");
+  for (const line of content.split(/\r?\n/)) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith("#")) continue;
+    const eq = trimmed.indexOf("=");
+    if (eq < 0) continue;
+    const key = trimmed.slice(0, eq).trim();
+    const val = trimmed.slice(eq + 1).trim();
+    if (!(key in process.env)) process.env[key] = val;
+  }
+}
+
+main().catch((error) => {
+  console.error(error?.message ?? error);
+  process.exit(1);
+});

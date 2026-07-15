@@ -32,6 +32,31 @@ monitor.mjs ── JSONL stdin/stdout ── Pi --mode rpc
 - A Feishu enterprise self-built app with bot capability enabled
 - Recommended: run Pi under a dedicated non-admin system account or container
 
+## Installation
+
+Choose one of two methods.
+
+### Method A: npm global install (recommended)
+
+```bash
+npm install -g pi-feishu-monitor
+pi-feishu-monitor
+```
+
+On first run with no config present, an interactive setup wizard asks for the Feishu App ID, App Secret, and Pi working directory, and enables discovery mode by default to capture your `open_id`. The config is written to `~/.pi-feishu-monitor/.env` (mode 0600); you can start directly afterward.
+
+### Method B: git clone
+
+```bash
+git clone https://github.com/goehou/pi-feishu-monitor
+cd pi-feishu-monitor
+npm install
+cp .env.example .env   # edit to fill in Feishu credentials
+npm start
+```
+
+Both methods use the same config options; Method A stores config at `~/.pi-feishu-monitor/.env`, Method B at the project-root `.env`.
+
 ## 1. Configure the Feishu App
 
 1. Open the [Feishu Open Platform](https://open.feishu.cn/) and create an **enterprise self-built app**.

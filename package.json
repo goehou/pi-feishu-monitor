@@ -1,14 +1,45 @@
 {
   "name": "pi-feishu-monitor",
-  "version": "0.2.0",
-  "private": true,
+  "version": "0.3.0",
+  "description": "Feishu long-connection bridge that runs Pi 24/7 with phone control and remote approval.",
+  "license": "MIT",
   "type": "module",
   "engines": { "node": ">=22.19.0" },
+  "bin": {
+    "pi-feishu-monitor": "src/cli.mjs"
+  },
   "scripts": {
     "start": "node --env-file-if-exists=.env src/monitor.mjs",
     "test": "node --test --test-isolation=none",
-    "check": "node --check src/monitor.mjs && node --check src/pi-rpc.mjs && node --check src/feishu.mjs && node --check src/policy.mjs && node --check src/state.mjs && node --check src/config.mjs && node --check src/text.mjs"
+    "check": "node --check src/monitor.mjs && node --check src/cli.mjs && node --check src/pi-rpc.mjs && node --check src/feishu.mjs && node --check src/policy.mjs && node --check src/state.mjs && node --check src/config.mjs && node --check src/text.mjs",
+    "prepublishOnly": "npm run check && npm test"
   },
+  "files": [
+    "src",
+    "extensions",
+    "deploy",
+    "README.md",
+    "README.en.md",
+    "DESIGN.md",
+    ".env.example"
+  ],
+  "keywords": [
+    "pi",
+    "pi-coding-agent",
+    "feishu",
+    "lark",
+    "24-7",
+    "automation",
+    "monitor",
+    "remote-control",
+    "approval"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/goehou/pi-feishu-monitor.git"
+  },
+  "homepage": "https://github.com/goehou/pi-feishu-monitor#readme",
+  "bugs": { "url": "https://github.com/goehou/pi-feishu-monitor/issues" },
   "dependencies": {
     "@larksuiteoapi/node-sdk": "1.71.1",
     "cross-spawn": "7.0.6",
