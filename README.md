@@ -47,7 +47,7 @@ monitor.mjs ── JSONL stdin/stdout ── Pi --mode rpc
 安装并创建配置：
 
 ```powershell
-cd C:\Users\25837\Desktop\loop-toy
+cd C:\path\to\loop-toy
 npm install
 Copy-Item .env.example .env
 notepad .env
