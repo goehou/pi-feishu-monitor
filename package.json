@@ -1,0 +1,17 @@
+{
+  "name": "pi-feishu-monitor",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=22.19.0" },
+  "scripts": {
+    "start": "node --env-file-if-exists=.env src/monitor.mjs",
+    "test": "node --test --test-isolation=none",
+    "check": "node --check src/monitor.mjs && node --check src/pi-rpc.mjs && node --check src/feishu.mjs && node --check src/policy.mjs && node --check src/state.mjs && node --check src/config.mjs && node --check src/text.mjs"
+  },
+  "dependencies": {
+    "@larksuiteoapi/node-sdk": "1.71.1",
+    "cross-spawn": "7.0.6",
+    "typebox": "1.1.38"
+  }
+}

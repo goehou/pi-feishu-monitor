@@ -1,0 +1,24 @@
+[Unit]
+Description=Pi Feishu 24/7 monitor
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User=pi-agent
+WorkingDirectory=/opt/pi-feishu-monitor
+EnvironmentFile=/etc/pi-feishu-monitor.env
+Environment=NODE_ENV=production
+Environment=PI_STATE_FILE=/var/lib/pi-feishu-monitor/state.json
+ExecStart=/usr/bin/node /opt/pi-feishu-monitor/src/monitor.mjs
+Restart=always
+RestartSec=5
+TimeoutStopSec=15
+KillMode=control-group
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+StateDirectory=pi-feishu-monitor
+
+[Install]
+WantedBy=multi-user.target
