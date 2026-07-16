@@ -7,7 +7,7 @@ import { FeishuBridge } from "./feishu.mjs";
 import { PiRpc } from "./pi-rpc.mjs";
 import { StateStore } from "./state.mjs";
 import { HELP, agentEndNotice, formatDuration, formatGoalStatus, formatProgress, formatTime, log, readGoalStatus } from "./text.mjs";
-import { requireText, safeError, safeRemote, splitCommand, summarizeTool } from "./text.mjs";
+import { requireText, safeError, safeRemote, splitCommand, summarizeTool, normalizeGoalAlias } from "./text.mjs";
 
 const STATUS_NAMES = {
   offline: "⚫ 已下线",
@@ -151,7 +151,7 @@ export class Monitor {
 
   async #handleMessage(message) {
     if (message.rawContentType !== "text") return this.#bridge.reply(message, "仅支持文本命令。");
-    const text = String(message.content ?? "").trim();
+    const text = normalizeGoalAlias(String(message.content ?? "").trim());
     if (!text) return this.#bridge.reply(message, "消息内容为空。");
     const [command, rest = ""] = splitCommand(text);
 
