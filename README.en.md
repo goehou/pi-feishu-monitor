@@ -222,7 +222,7 @@ Approvals auto-reject on timeout. If button UX is truly needed later, add an HTT
 | `PI_AUTOSTART` | `1` | Whether to start Pi when the bridge starts |
 | `PI_RESUME_PROMPT` | built-in resume instruction | Message sent after crash recovery; can be `/goal continue` |
 | `PI_APPROVAL_TIMEOUT_MS` | `600000` | Approval timeout; clamped to 10s–24h |
-| `PI_SEND_ASSISTANT_TEXT` | `0` | Whether completion notices include the model's final text. Enable to see Pi's answer on your phone; may send business content to Feishu |
+| `PI_SEND_ASSISTANT_TEXT` | `1` | Whether completion notices include the model's final text. On by default so you see Pi's answer on your phone; set `0` if business content shouldn't go to Feishu |
 | `PI_STATE_FILE` | project-root state file | Persistent state path |
 | `PI_EXTENSION` | built-in extension path | Override when using a customized copy |
 
@@ -268,7 +268,7 @@ The bridge cannot start itself from Feishu when it is offline; it also cannot re
 3. The bridge never passes `FEISHU_*` credentials to Pi; logs and phone messages redact common tokens/keys.
 4. Command regexes and phone approval are a second line of defense — **not a sandbox**.
 5. Run Pi in a dedicated non-admin account, container, or VM, mounting only the project directory it may modify; do not point `PI_CWD` at this monitor project.
-6. Restrict `.env` and the state file to the service account only; `PI_SEND_ASSISTANT_TEXT=1` may send business content to Feishu and is off by default.
+6. Restrict `.env` and the state file to the service account only; `PI_SEND_ASSISTANT_TEXT` is on by default and sends Pi's answer to Feishu; set `0` for sensitive scenarios.
 
 ## Directory Layout
 

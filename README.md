@@ -225,7 +225,7 @@ rm build.tmp
 | `PI_AUTOSTART` | `1` | 桥启动时是否启动 Pi |
 | `PI_RESUME_PROMPT` | 内置恢复指令 | 崩溃后的恢复消息，可设 `/goal continue` |
 | `PI_APPROVAL_TIMEOUT_MS` | `600000` | 审批超时，限制为 10 秒至 24 小时 |
-| `PI_SEND_ASSISTANT_TEXT` | `0` | 完成通知是否附带模型最终文本。开启后手机可直接看到 Pi 的回答内容，但可能把业务内容发到飞书 |
+| `PI_SEND_ASSISTANT_TEXT` | `1` | 完成通知是否附带模型最终文本。默认开启，手机可直接看到 Pi 的回答内容；如担心把业务内容发到飞书可设 `0` |
 | `PI_STATE_FILE` | 项目根目录状态文件 | 持久化状态路径 |
 | `PI_EXTENSION` | 内置扩展路径 | 使用定制副本时覆盖 |
 
@@ -271,7 +271,7 @@ sudo journalctl -u pi-monitor -f
 3. 桥不会把 `FEISHU_*` 凭证传给 Pi，日志和手机消息会遮盖常见 token/key。
 4. 命令正则和手机审批只是第二道防线，**不是沙箱**。
 5. Pi 应在专用非管理员账号、容器或 VM 中运行，只挂载允许修改的项目目录；不要让 `PI_CWD` 指向本监控项目。
-6. `.env` 与状态文件应限制为仅服务账号可读；`PI_SEND_ASSISTANT_TEXT=1` 可能把业务内容发到飞书，默认关闭。
+6. `.env` 与状态文件应限制为仅服务账号可读；`PI_SEND_ASSISTANT_TEXT` 默认开启，会把 Pi 的回答内容发到飞书，敏感场景可设 `0` 关闭。
 
 ## 目录
 

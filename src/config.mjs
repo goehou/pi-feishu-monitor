@@ -21,7 +21,7 @@ export function loadConfig(env = process.env) {
   return {
     autostart: bool(env.PI_AUTOSTART, true),
     approvalTimeout: clamp(integer(env.PI_APPROVAL_TIMEOUT_MS, 600_000), 10_000, 86_400_000),
-    sendAssistantText: bool(env.PI_SEND_ASSISTANT_TEXT, false),
+    sendAssistantText: bool(env.PI_SEND_ASSISTANT_TEXT, true),
     stateFile: resolve(env.PI_STATE_FILE || resolve(ROOT, ".pi-monitor-state.json")),
     feishu: {
       appId,
