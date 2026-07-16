@@ -43,7 +43,12 @@ export class FeishuBridge {
 
   async reply(message, text) {
     if (!this.#channel) throw new Error("飞书长连接未启动");
-    return this.#channel.send(message.chatId, { text: String(text) }, { replyTo: message.messageId });
+    try {
+      return await this.#channel.send(message.chatId, { text: String(text) }, { replyTo: message.messageId });
+    } catch {
+      // ponytail: replyTo 失败（messageId 格式问题）时回退普通发送，保证回复必达
+      return this.#channel.send(message.chatId, { text: String(text) });
+    }
   }
 
   async send(text, target = this.target) {
