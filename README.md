@@ -69,16 +69,22 @@ npm start
 
 ## 2. 首次发现 open_id
 
-安装并创建配置：
+飞书用 `open_id` 标识消息发送者，正式运行前必须抓取你自己的 `open_id` 填入白名单。发现模式就是干这个的：只打印身份，不执行任何远程命令。
 
-```powershell
-cd C:\path\to\pi-feishu-monitor
-npm install
-Copy-Item .env.example .env
-notepad .env
+### 方式 A：npm 全局安装（交互向导）
+
+首次运行 `pi-feishu-monitor` 时向导会问 4 个问题，其中「启用发现模式?」默认 `Y`：
+
+```text
+飞书 App ID (cli_xxx): cli_aadd...
+飞书 App Secret: ...
+Pi 工作目录 (绝对路径): C:\work\your-project
+启用发现模式? (Y/n): Y
 ```
 
-首次配置：
+向导写完配置后**自动启动**，终端出现 `飞书长连接已连接` 即可进行下一步。
+
+### 方式 B：git clone（手动编辑）
 
 ```dotenv
 FEISHU_APP_ID=<你的App-ID>
@@ -88,19 +94,23 @@ FEISHU_ALLOWED_OPEN_IDS=
 PI_CWD=C:\work\your-project
 ```
 
-启动：
-
 ```powershell
 npm start
 ```
 
-然后在飞书单聊机器人发送任意文字；群聊中请先 `@机器人`。终端会输出：
+### 抓取身份
+
+机器人上线后，在飞书**单聊**机器人发送任意文字；群聊中请先 `@机器人`。终端会输出：
 
 ```text
 飞书发现模式: openId=ou_xxxxxxxxx, chatId=oc_xxxxxxxxx
 ```
 
-发现模式不会启动任何远程命令。把配置改成：
+> ⚠️ 发现模式**只抓取身份，不会回复消息**。手机端收不到任何回复是正常的，看到终端打印出 `openId`/`chatId` 就算成功。发现模式不启动 Pi，不执行任何远程命令。
+
+### 切换到正式运行
+
+抓到身份后，把配置里的 `open_id`（和可选的 `chat_id`）填入白名单，并关闭发现模式：
 
 ```dotenv
 FEISHU_DISCOVERY=0
@@ -109,7 +119,12 @@ FEISHU_ALLOWED_OPEN_IDS=ou_xxxxxxxxx
 FEISHU_ALLOWED_CHAT_IDS=oc_xxxxxxxxx
 ```
 
-重启 `npm start`。`CorpId` 是企业 ID，不是员工身份；本项目需要消息发送者的 `open_id`。
+- 方式 A（全局安装）：编辑 `~/.pi-feishu-monitor/.env` 后重新运行 `pi-feishu-monitor`
+- 方式 B（git clone）：编辑项目根目录 `.env` 后重新运行 `npm start`
+
+重启后手机发 `帮助`，如果收到命令列表说明鉴权通过、双向通信正常。
+
+`CorpId` 是企业 ID，不是员工身份；本项目需要消息发送者的 `open_id`。
 
 ## 3. 手机测试
 
