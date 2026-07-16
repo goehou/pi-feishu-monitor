@@ -397,9 +397,15 @@ export class Monitor {
   }
 
   async #resolveApproval(message, rawId, approved) {
-    const id = rawId.trim().toLowerCase();
+    let id = rawId.trim().toLowerCase();
+    // ponytail: 只有一个待审批时，“批准”/“拒绝”不带编号也能命中，避免手机上复制编号的麻烦
+    if (!id && this.#approvals.size === 1) id = this.#approvals.keys().next().value;
     const pending = this.#approvals.get(id);
-    if (!pending) return this.#bridge.reply(message, "审批不存在或已经过期。");
+    if (!pending) {
+      const count = this.#approvals.size;
+      const hint = count === 0 ? "当前没有待审批。" : `请带上编号，如：${approved ? "批准" : "拒绝"} ${this.#approvals.keys().next().value}`;
+      return this.#bridge.reply(message, `审批不存在或已经过期。${hint}`);
+    }
     clearTimeout(pending.timer);
     this.#approvals.delete(id);
     const delivered = this.#respondUi({ id: pending.rpcId, confirmed: approved });
