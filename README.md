@@ -72,7 +72,7 @@ npm start
 安装并创建配置：
 
 ```powershell
-cd C:\path\to\loop-toy
+cd C:\path\to\pi-feishu-monitor
 npm install
 Copy-Item .env.example .env
 notepad .env

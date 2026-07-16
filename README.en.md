@@ -74,7 +74,7 @@ No public Request URL is needed. The App Secret is only stored in the local `.en
 Install and create the config:
 
 ```bash
-cd path/to/loop-toy
+cd path/to/pi-feishu-monitor
 npm install
 cp .env.example .env
 # edit .env
