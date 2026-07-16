@@ -289,3 +289,7 @@ DESIGN.md                 架构、恢复语义和威胁模型
 npm test
 npm run check
 ```
+
+## 友情链接
+
+- [LINUX DO](https://linux.do/)— 开发者与技术爱好者社区
