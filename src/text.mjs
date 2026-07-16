@@ -6,6 +6,18 @@ export function splitCommand(value) {
   return [match?.[1] ?? value, match?.[2]?.trim() ?? ""];
 }
 
+// ponytail: /goal 和 /sisyphus 是用户直觉写法，Pi 实际命令是 /goals-set / /sisyphus-set；在此做别名归一，避免在命令分发里散写
+const GOAL_ALIASES = { "/goal": "/goals-set", "/goals": "/goals-set", "/sisyphus": "/sisyphus-set" };
+export function normalizeGoalAlias(text) {
+  const match = text.match(/^(\S+)(?:\s+([\s\S]*))?$/);
+  const cmd = match?.[1] ?? "";
+  const rest = match?.[2]?.trim() ?? "";
+  const mapped = GOAL_ALIASES[cmd.toLowerCase()];
+  if (!mapped) return text;
+  if (!rest) throw new Error(`${cmd} 命令缺少内容，用法：${cmd} <目标描述>`);
+  return `${mapped} ${rest}`;
+}
+
 export function requireText(value, command) {
   if (!value) throw new Error(`${command}命令缺少内容`);
 }

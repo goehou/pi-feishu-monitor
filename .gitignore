@@ -2,6 +2,7 @@
 .pi-monitor-state.json
 .pi-monitor-state.json.*.tmp
 .pi-test/
+.pi/
 node_modules/
 *.tgz
 bridge.log

@@ -71,16 +71,21 @@ No public Request URL is needed. The App Secret is only stored in the local `.en
 
 ## 2. First-Time open_id Discovery
 
-Install and create the config:
+Feishu identifies message senders by `open_id`; you must capture your own `open_id` and add it to the allowlist before going live. Discovery mode does exactly this: it only prints identities and runs no remote commands.
 
-```bash
-cd path/to/loop-toy
-npm install
-cp .env.example .env
-# edit .env
+### Option A: npm global install (interactive wizard)
+
+The first time you run `pi-feishu-monitor`, the wizard asks 4 questions; "Enable discovery mode?" defaults to `Y`:
+
+```text
+飞书 App ID (cli_xxx): cli_aadd...
+飞书 App Secret: ...
+Pi 工作目录 (绝对路径): /path/to/your-project
+启用发现模式? (Y/n): Y
 ```
+After writing the config, the wizard **boots the monitor automatically** — wait for `飞书长连接已连接` in the terminal.
 
-First-time config:
+### Option B: git clone (manual edit)
 
 ```dotenv
 FEISHU_APP_ID=<your-app-id>
@@ -90,19 +95,23 @@ FEISHU_ALLOWED_OPEN_IDS=
 PI_CWD=/path/to/your-project
 ```
 
-Start:
-
 ```bash
 npm start
 ```
 
-Then send any text to the bot in a Feishu direct message; in a group, `@mention` the bot first. The terminal will print:
+### Capture the identity
+
+Once the bot is online, send any text to it in a Feishu **direct message**; in a group, `@mention` the bot first. The terminal will print:
 
 ```text
 飞书发现模式: openId=ou_xxxxxxxxx, chatId=oc_xxxxxxxxx
 ```
 
-Discovery mode starts no remote commands. Update the config:
+> ⚠️ Discovery mode **only captures identities and never replies**. Getting no response on your phone is expected — seeing `openId`/`chatId` printed in the terminal means success. Discovery mode starts Pi and runs no remote commands.
+
+### Switch to production mode
+
+After capturing the identity, fill the `open_id` (and optionally `chat_id`) into the allowlist and turn off discovery:
 
 ```dotenv
 FEISHU_DISCOVERY=0
@@ -111,7 +120,12 @@ FEISHU_ALLOWED_OPEN_IDS=ou_xxxxxxxxx
 FEISHU_ALLOWED_CHAT_IDS=oc_xxxxxxxxx
 ```
 
-Restart `npm start`. `CorpId` is the enterprise ID, not a user identity; this project needs the message sender's `open_id`.
+- Option A (global install): edit `~/.pi-feishu-monitor/.env` and rerun `pi-feishu-monitor`
+- Option B (git clone): edit the project `.env` and rerun `npm start`
+
+After restarting, send `帮助` (help) from your phone — if you receive the command list, auth passed and two-way messaging works.
+
+`CorpId` is the enterprise ID, not a user identity; this project needs the message sender's `open_id`.
 
 ## 3. Test from Your Phone
 
@@ -222,7 +236,7 @@ Approvals auto-reject on timeout. If button UX is truly needed later, add an HTT
 | `PI_AUTOSTART` | `1` | Whether to start Pi when the bridge starts |
 | `PI_RESUME_PROMPT` | built-in resume instruction | Message sent after crash recovery; can be `/goal continue` |
 | `PI_APPROVAL_TIMEOUT_MS` | `600000` | Approval timeout; clamped to 10s–24h |
-| `PI_SEND_ASSISTANT_TEXT` | `0` | Whether completion notices include the model's final text. Enable to see Pi's answer on your phone; may send business content to Feishu |
+| `PI_SEND_ASSISTANT_TEXT` | `1` | Whether completion notices include the model's final text. On by default so you see Pi's answer on your phone; set `0` if business content shouldn't go to Feishu |
 | `PI_STATE_FILE` | project-root state file | Persistent state path |
 | `PI_EXTENSION` | built-in extension path | Override when using a customized copy |
 
@@ -268,7 +282,7 @@ The bridge cannot start itself from Feishu when it is offline; it also cannot re
 3. The bridge never passes `FEISHU_*` credentials to Pi; logs and phone messages redact common tokens/keys.
 4. Command regexes and phone approval are a second line of defense — **not a sandbox**.
 5. Run Pi in a dedicated non-admin account, container, or VM, mounting only the project directory it may modify; do not point `PI_CWD` at this monitor project.
-6. Restrict `.env` and the state file to the service account only; `PI_SEND_ASSISTANT_TEXT=1` may send business content to Feishu and is off by default.
+6. Restrict `.env` and the state file to the service account only; `PI_SEND_ASSISTANT_TEXT` is on by default and sends Pi's answer to Feishu; set `0` for sensitive scenarios.
 
 ## Directory Layout
 

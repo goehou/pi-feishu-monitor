@@ -7,7 +7,7 @@ import { FeishuBridge } from "./feishu.mjs";
 import { PiRpc } from "./pi-rpc.mjs";
 import { StateStore } from "./state.mjs";
 import { HELP, agentEndNotice, formatDuration, formatGoalStatus, formatProgress, formatTime, log, readGoalStatus } from "./text.mjs";
-import { requireText, safeError, safeRemote, splitCommand, summarizeTool } from "./text.mjs";
+import { requireText, safeError, safeRemote, splitCommand, summarizeTool, normalizeGoalAlias } from "./text.mjs";
 
 const STATUS_NAMES = {
   offline: "⚫ 已下线",
@@ -51,7 +51,7 @@ export class Monitor {
     const shutdown = () => { void this.shutdown().catch((error) => log(`关闭失败: ${safeError(error)}`)); };
     process.once("SIGINT", shutdown);
     process.once("SIGTERM", shutdown);
-    if (state.desiredRunning && !this.config.feishu.discovery) {
+    if (this.config.autostart && state.desiredRunning && !this.config.feishu.discovery) {
       await this.#ensurePi().catch((error) => log(`Pi 启动失败，飞书桥接继续运行: ${safeError(error)}`));
     }
   }
@@ -151,7 +151,7 @@ export class Monitor {
 
   async #handleMessage(message) {
     if (message.rawContentType !== "text") return this.#bridge.reply(message, "仅支持文本命令。");
-    const text = String(message.content ?? "").trim();
+    const text = normalizeGoalAlias(String(message.content ?? "").trim());
     if (!text) return this.#bridge.reply(message, "消息内容为空。");
     const [command, rest = ""] = splitCommand(text);
 
@@ -397,9 +397,15 @@ export class Monitor {
   }
 
   async #resolveApproval(message, rawId, approved) {
-    const id = rawId.trim().toLowerCase();
+    let id = rawId.trim().toLowerCase();
+    // ponytail: 只有一个待审批时，“批准”/“拒绝”不带编号也能命中，避免手机上复制编号的麻烦
+    if (!id && this.#approvals.size === 1) id = this.#approvals.keys().next().value;
     const pending = this.#approvals.get(id);
-    if (!pending) return this.#bridge.reply(message, "审批不存在或已经过期。");
+    if (!pending) {
+      const count = this.#approvals.size;
+      const hint = count === 0 ? "当前没有待审批。" : `请带上编号，如：${approved ? "批准" : "拒绝"} ${this.#approvals.keys().next().value}`;
+      return this.#bridge.reply(message, `审批不存在或已经过期。${hint}`);
+    }
     clearTimeout(pending.timer);
     this.#approvals.delete(id);
     const delivered = this.#respondUi({ id: pending.rpcId, confirmed: approved });
@@ -420,7 +426,12 @@ export class Monitor {
   }
 
   #effectiveCwd() {
-    return this.#store.state.cwd || this.config.pi.cwd;
+    const stored = this.#store.state.cwd;
+    if (stored) {
+      try { if (statSync(stored).isDirectory()) return stored; }
+      catch { /* stale cwd, fall back to config */ }
+    }
+    return this.config.pi.cwd;
   }
 
   async #status() {
