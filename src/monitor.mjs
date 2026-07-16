@@ -51,7 +51,7 @@ export class Monitor {
     const shutdown = () => { void this.shutdown().catch((error) => log(`关闭失败: ${safeError(error)}`)); };
     process.once("SIGINT", shutdown);
     process.once("SIGTERM", shutdown);
-    if (state.desiredRunning && !this.config.feishu.discovery) {
+    if (this.config.autostart && state.desiredRunning && !this.config.feishu.discovery) {
       await this.#ensurePi().catch((error) => log(`Pi 启动失败，飞书桥接继续运行: ${safeError(error)}`));
     }
   }
@@ -420,7 +420,12 @@ export class Monitor {
   }
 
   #effectiveCwd() {
-    return this.#store.state.cwd || this.config.pi.cwd;
+    const stored = this.#store.state.cwd;
+    if (stored) {
+      try { if (statSync(stored).isDirectory()) return stored; }
+      catch { /* stale cwd, fall back to config */ }
+    }
+    return this.config.pi.cwd;
   }
 
   async #status() {

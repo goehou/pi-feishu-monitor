@@ -1,6 +1,6 @@
 {
   "name": "pi-feishu-monitor",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "description": "Feishu long-connection bridge that runs Pi 24/7 with phone control and remote approval.",
   "license": "MIT",
   "type": "module",
