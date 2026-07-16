@@ -36,7 +36,9 @@ async function main() {
   }
   loadEnvIntoProcess();
   process.env.PI_STATE_FILE = process.env.PI_STATE_FILE || STATE_FILE;
-  await import("./monitor.mjs");
+  const { loadConfig } = await import("./config.mjs");
+  const { Monitor } = await import("./monitor.mjs");
+  await new Monitor(loadConfig()).run();
 }
 
 function printHelp() {
@@ -60,9 +62,9 @@ function ensureConfigDir() {
 async function firstRunSetup() {
   const rl = createInterface({ input: process.stdin, output: process.stdout });
   const ask = (q) => rl.question(q);
-  const appId = (await ask("飞书 App ID (cli_xxx): ")).trim();
-  const appSecret = (await ask("飞书 App Secret: ")).trim();
-  const piCwd = (await ask("Pi 工作目录 (绝对路径): ")).trim();
+  const appId = await required(ask, "飞书 App ID (cli_xxx): ");
+  const appSecret = await required(ask, "飞书 App Secret: ");
+  const piCwd = await required(ask, "Pi 工作目录 (绝对路径): ");
   console.log("\n首次接入建议先用发现模式抓取 open_id。");
   const discovery = (await ask("启用发现模式? (Y/n): ")).trim().toLowerCase() !== "n" ? "1" : "0";
   const openIds = discovery === "0" ? (await ask("授权 open_id (逗号分隔): ")).trim() : "";
@@ -77,6 +79,14 @@ async function firstRunSetup() {
   ];
   const { writeFileSync } = await import("node:fs");
   writeFileSync(ENV_FILE, lines.join("\n") + "\n", { mode: 0o600 });
+}
+
+async function required(ask, prompt) {
+  while (true) {
+    const value = (await ask(prompt)).trim();
+    if (value) return value;
+    console.log("⚠� 必填项，请重新输入。");
+  }
 }
 
 function loadEnvIntoProcess() {
