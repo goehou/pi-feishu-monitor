@@ -4,12 +4,30 @@ import { existsSync, mkdirSync, readFileSync } from "node:fs";
 import { createInterface } from "node:readline/promises";
 import { homedir } from "node:os";
 import { resolve, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
+const pkg = JSON.parse(readFileSync(resolve(dirname(fileURLToPath(import.meta.url)), "..", "package.json"), "utf8"));
 
 const CONFIG_DIR = resolve(homedir(), ".pi-feishu-monitor");
 const ENV_FILE = resolve(CONFIG_DIR, ".env");
 const STATE_FILE = resolve(CONFIG_DIR, "state.json");
 
 async function main() {
+  const args = process.argv.slice(2);
+  if (args.includes("-h") || args.includes("--help")) {
+    printHelp();
+    return;
+  }
+  if (args.includes("-v") || args.includes("--version")) {
+    console.log(pkg.version);
+    return;
+  }
+  if (args.includes("--config")) {
+    console.log(`配置目录: ${CONFIG_DIR}`);
+    console.log(`配置文件: ${ENV_FILE}`);
+    console.log(`状态文件: ${STATE_FILE}`);
+    if (!existsSync(ENV_FILE)) console.log("(尚未创建配置)");
+    return;
+  }
   ensureConfigDir();
   if (!existsSync(ENV_FILE)) {
     console.log("未找到配置，进入首次配置向导。\n");
@@ -19,6 +37,20 @@ async function main() {
   loadEnvIntoProcess();
   process.env.PI_STATE_FILE = process.env.PI_STATE_FILE || STATE_FILE;
   await import("./monitor.mjs");
+}
+
+function printHelp() {
+  console.log(`pi-feishu-monitor v${pkg.version}
+Pi × 飞书 24/7 监控桥
+
+用法:
+  pi-feishu-monitor            启动监控桥（首次运行进入配置向导）
+  pi-feishu-monitor --version   显示版本号
+  pi-feishu-monitor --help      显示本帮助
+  pi-feishu-monitor --config    显示配置文件路径
+
+配置文件位于 ${ENV_FILE}
+文档: https://www.npmjs.com/package/pi-feishu-monitor`);
 }
 
 function ensureConfigDir() {
